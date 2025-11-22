@@ -1,4 +1,3 @@
-// models/UnderTask.js
 module.exports = (sequelize, DataTypes) => {
   return sequelize.define(
     "UnderTask",
@@ -9,8 +8,13 @@ module.exports = (sequelize, DataTypes) => {
       description: { type: DataTypes.TEXT },
       points: { type: DataTypes.INTEGER, defaultValue: 0 },
       ord: { type: DataTypes.INTEGER, defaultValue: 0 },
-      isCompleted: { type: DataTypes.BOOLEAN, defaultValue: false },
+      isCompleted: { type: DataTypes.BOOLEAN, defaultValue: false }
     },
-    { tableName: "under_tasks", timestamps: true, createdAt: "createdAt", updatedAt: "updatedAt" }
+    {
+      tableName: "under_tasks",
+      timestamps: true,
+      createdAt: "createdAt",
+      updatedAt: "updatedAt"
+    }
   );
 };

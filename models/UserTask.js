@@ -1,4 +1,3 @@
-// models/UserTask.js
 module.exports = (sequelize, DataTypes) => {
   return sequelize.define(
     "UserTask",
@@ -6,17 +5,13 @@ module.exports = (sequelize, DataTypes) => {
       id: { type: DataTypes.INTEGER.UNSIGNED, primaryKey: true, autoIncrement: true },
       userId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
       taskId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
-      status: { type: DataTypes.STRING(50), defaultValue: "assigned" },
-      progress: { type: DataTypes.DECIMAL(5, 2), defaultValue: 0 },
-      startedAt: { type: DataTypes.DATE },
-      completedAt: { type: DataTypes.DATE },
+      progress: { type: DataTypes.INTEGER, defaultValue: 0 }
     },
     {
       tableName: "user_tasks",
       timestamps: true,
       createdAt: "createdAt",
-      updatedAt: "updatedAt",
-      indexes: [{ unique: true, fields: ["userId", "taskId"] }],
+      updatedAt: "updatedAt"
     }
   );
 };
