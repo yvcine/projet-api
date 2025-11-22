@@ -1,77 +1,89 @@
-const { validationResult } = require("express-validator");
+// controllers/UserController.js
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
-const Role = require("../models/Role");
+const { User, Role } = require("../models");
+const generateToken = require("../utils/generateToken");
 
-const UserController = {
+exports.register = async (req, res) => {
+  try {
+    const { name, email, password, roleId } = req.body;
+    const existing = await User.findOne({ where: { email } });
+    if (existing) return res.status(400).json({ message: "Email déjà utilisé" });
 
-  // Inscription
-  register: async (req, res) => {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    const hashed = await bcrypt.hash(password, 10);
+    const user = await User.create({ name, email, password: hashed, roleId });
 
-      const { name, email, password, role_id } = req.body;
+    return res.status(201).json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      token: generateToken(user),
+    });
+  } catch (err) {
+    return res.status(500).json({ message: "Erreur serveur", error: err.message });
+  }
+};
 
-      // Vérifier si email existe
-      const existingUser = await User.findOne({ where: { email } });
-      if (existingUser) return res.status(400).json({ message: "Email déjà utilisé" });
+exports.login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ where: { email }, include: Role });
+    if (!user) return res.status(404).json({ message: "Utilisateur introuvable" });
 
-      const hashedPassword = await bcrypt.hash(password, 10);
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) return res.status(401).json({ message: "Mot de passe incorrect" });
 
-      const user = await User.create({ name, email, password: hashedPassword, role_id });
+    return res.json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      token: generateToken(user),
+    });
+  } catch (err) {
+    return res.status(500).json({ message: "Erreur serveur", error: err.message });
+  }
+};
 
-      res.status(201).json({ message: "Utilisateur créé", user });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Erreur serveur" });
-    }
-  },
+exports.getAll = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    const { count, rows } = await User.findAndCountAll({ limit, offset, include: Role });
+    res.json({ total: count, page, limit, data: rows });
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
+  }
+};
 
-  // Connexion
-  login: async (req, res) => {
-    try {
-      const { email, password } = req.body;
-      const user = await User.findOne({ where: { email } });
-      if (!user) return res.status(400).json({ message: "Utilisateur non trouvé" });
-
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) return res.status(400).json({ message: "Mot de passe incorrect" });
-
-      const token = jwt.sign({ id: user.id, role_id: user.role_id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-      res.json({ token });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Erreur serveur" });
-    }
-  },
-
-  // CRUD utilisateur (admin)
-  getAllUsers: async (req, res) => {
-    const users = await User.findAll({ include: Role });
-    res.json(users);
-  },
-
-  getUserById: async (req, res) => {
+exports.getById = async (req, res) => {
+  try {
     const user = await User.findByPk(req.params.id, { include: Role });
     if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
     res.json(user);
-  },
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
+  }
+};
 
-  updateUser: async (req, res) => {
+exports.update = async (req, res) => {
+  try {
+    const { name, roleId, isActive } = req.body;
     const user = await User.findByPk(req.params.id);
     if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
-    await user.update(req.body);
-    res.json({ message: "Utilisateur mis à jour", user });
-  },
+    await user.update({ name: name ?? user.name, roleId: roleId ?? user.roleId, isActive: isActive ?? user.isActive });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
+  }
+};
 
-  deleteUser: async (req, res) => {
+exports.remove = async (req, res) => {
+  try {
     const user = await User.findByPk(req.params.id);
     if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
     await user.destroy();
     res.json({ message: "Utilisateur supprimé" });
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
   }
 };
-
-module.exports = UserController;

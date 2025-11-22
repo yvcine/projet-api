@@ -1,35 +1,43 @@
-const UserTask = require("../models/UserTask");
-const Task = require("../models/Task");
-const XPLog = require("../models/XPLog");
+// controllers/UserTaskController.js
+const { UserTask } = require("../models");
 
-const UserTaskController = {
-
-  getTasksForUser: async (req, res) => {
-    const userId = req.params.userId;
-    const tasks = await UserTask.findAll({ where: { user_id: userId }, include: Task });
-    res.json(tasks);
-  },
-
-  completeTask: async (req, res) => {
-    const { user_id, task_id } = req.body;
-    const userTask = await UserTask.findOne({ where: { user_id, task_id } });
-    if (!userTask) return res.status(404).json({ message: "Tâche non trouvée pour cet utilisateur" });
-
-    userTask.completed = true;
-    userTask.completed_at = new Date();
-    await userTask.save();
-
-    // Ajouter XP
-    const task = await Task.findByPk(task_id);
-    await XPLog.create({ user_id, task_id, xp_gained: task.xp_reward });
-
-    res.json({ message: "Tâche complétée", userTask });
-  },
-
-  resetTasks: async (req, res) => {
-    await UserTask.update({ completed: false, completed_at: null }, { where: {} });
-    res.json({ message: "Toutes les tâches réinitialisées" });
+exports.assign = async (req, res) => {
+  try {
+    const { userId, taskId } = req.body;
+    const ut = await UserTask.create({ userId, taskId });
+    res.status(201).json(ut);
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
   }
 };
 
-module.exports = UserTaskController;
+exports.getAll = async (req, res) => {
+  try {
+    const data = await UserTask.findAll();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
+  }
+};
+
+exports.update = async (req, res) => {
+  try {
+    const ut = await UserTask.findByPk(req.params.id);
+    if (!ut) return res.status(404).json({ message: "Non trouvé" });
+    await ut.update(req.body);
+    res.json(ut);
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
+  }
+};
+
+exports.remove = async (req, res) => {
+  try {
+    const ut = await UserTask.findByPk(req.params.id);
+    if (!ut) return res.status(404).json({ message: "Non trouvé" });
+    await ut.destroy();
+    res.json({ message: "Supprimé" });
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
+  }
+};

@@ -1,12 +1,24 @@
+// routes/role.js
 const express = require("express");
 const router = express.Router();
 const RoleController = require("../controllers/RoleController");
+const { body } = require("express-validator");
+const validate = require("../middleware/validationMiddleware");
+const auth = require("../middleware/auth");
+const roleMiddleware = require("../middleware/role");
 
-// CRUD rôles
-router.get("/", RoleController.getAllRoles);
-router.post("/", RoleController.createRole);
-router.get("/:id", RoleController.getRoleById);
-router.put("/:id", RoleController.updateRole);
-router.delete("/:id", RoleController.deleteRole);
+router.post(
+  "/",
+  auth,
+  roleMiddleware(["admin"]),
+  [body("name").notEmpty().withMessage("name obligatoire")],
+  validate,
+  RoleController.create
+);
+
+router.get("/", auth, RoleController.getAll);
+router.get("/:id", auth, RoleController.getById);
+router.put("/:id", auth, roleMiddleware(["admin"]), RoleController.update);
+router.delete("/:id", auth, roleMiddleware(["admin"]), RoleController.remove);
 
 module.exports = router;

@@ -1,14 +1,20 @@
-const XPLog = require("../models/XPLog");
+// controllers/XPLogController.js
+const { XPLog } = require("../models");
 
-const XPLogController = {
-  getXPLogsForUser: async (req, res) => {
-    const logs = await XPLog.findAll({ where: { user_id: req.params.userId } });
-    res.json(logs);
-  },
-  addXPLog: async (req, res) => {
-    const log = await XPLog.create(req.body);
-    res.status(201).json({ message: "XP ajouté", log });
+exports.create = async (req, res) => {
+  try {
+    const xp = await XPLog.create(req.body);
+    res.status(201).json(xp);
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
   }
 };
 
-module.exports = XPLogController;
+exports.getAll = async (req, res) => {
+  try {
+    const logs = await XPLog.findAll({ where: req.query.userId ? { userId: req.query.userId } : {} });
+    res.json(logs);
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
+  }
+};

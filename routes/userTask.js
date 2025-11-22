@@ -1,10 +1,21 @@
+// routes/userTask.js
 const express = require("express");
 const router = express.Router();
 const UserTaskController = require("../controllers/UserTaskController");
+const { body } = require("express-validator");
+const validate = require("../middleware/validationMiddleware");
+const auth = require("../middleware/auth");
 
-// Gestion tâches utilisateur
-router.get("/:userId", UserTaskController.getTasksForUser);
-router.post("/complete", UserTaskController.completeTask); // user coche la tâche
-router.post("/reset", UserTaskController.resetTasks); // reset toutes les 24h (admin ou CRON)
+router.post(
+  "/",
+  auth,
+  [body("userId").isInt(), body("taskId").isInt()],
+  validate,
+  UserTaskController.assign
+);
+
+router.get("/", auth, UserTaskController.getAll);
+router.put("/:id", auth, UserTaskController.update);
+router.delete("/:id", auth, UserTaskController.remove);
 
 module.exports = router;

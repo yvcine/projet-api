@@ -1,20 +1,31 @@
-const TaskReset = require("../models/TaskReset");
+// controllers/TaskResetController.js
+const { TaskReset } = require("../models");
 
-const TaskResetController = {
-  getAllResets: async (req, res) => {
-    const resets = await TaskReset.findAll();
-    res.json(resets);
-  },
-  createReset: async (req, res) => {
-    const reset = await TaskReset.create(req.body);
-    res.status(201).json({ message: "Reset créé", reset });
-  },
-  deleteReset: async (req, res) => {
-    const reset = await TaskReset.findByPk(req.params.id);
-    if (!reset) return res.status(404).json({ message: "Reset non trouvé" });
-    await reset.destroy();
-    res.json({ message: "Reset supprimé" });
+exports.create = async (req, res) => {
+  try {
+    const tr = await TaskReset.create(req.body);
+    res.status(201).json(tr);
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
   }
 };
 
-module.exports = TaskResetController;
+exports.getAll = async (req, res) => {
+  try {
+    const data = await TaskReset.findAll();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
+  }
+};
+
+exports.remove = async (req, res) => {
+  try {
+    const tr = await TaskReset.findByPk(req.params.id);
+    if (!tr) return res.status(404).json({ message: "Non trouvé" });
+    await tr.destroy();
+    res.json({ message: "Supprimé" });
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
+  }
+};

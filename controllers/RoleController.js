@@ -1,32 +1,53 @@
-const Role = require("../models/Role");
+// controllers/RoleController.js
+const { Role } = require("../models");
 
-const RoleController = {
-  getAllRoles: async (req, res) => {
+exports.create = async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    const role = await Role.create({ name, description });
+    res.status(201).json(role);
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
+  }
+};
+
+exports.getAll = async (req, res) => {
+  try {
     const roles = await Role.findAll();
     res.json(roles);
-  },
-  getRoleById: async (req, res) => {
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
+  }
+};
+
+exports.getById = async (req, res) => {
+  try {
     const role = await Role.findByPk(req.params.id);
     if (!role) return res.status(404).json({ message: "Rôle non trouvé" });
     res.json(role);
-  },
-  createRole: async (req, res) => {
-    const { name } = req.body;
-    const role = await Role.create({ name });
-    res.status(201).json({ message: "Rôle créé", role });
-  },
-  updateRole: async (req, res) => {
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
+  }
+};
+
+exports.update = async (req, res) => {
+  try {
     const role = await Role.findByPk(req.params.id);
     if (!role) return res.status(404).json({ message: "Rôle non trouvé" });
     await role.update(req.body);
-    res.json({ message: "Rôle mis à jour", role });
-  },
-  deleteRole: async (req, res) => {
+    res.json(role);
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
+  }
+};
+
+exports.remove = async (req, res) => {
+  try {
     const role = await Role.findByPk(req.params.id);
     if (!role) return res.status(404).json({ message: "Rôle non trouvé" });
     await role.destroy();
     res.json({ message: "Rôle supprimé" });
+  } catch (err) {
+    res.status(500).json({ message: "Erreur serveur", error: err.message });
   }
 };
-
-module.exports = RoleController;

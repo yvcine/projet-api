@@ -2,9 +2,8 @@
 const express = require("express");
 const router = express.Router();
 
-// GET /test
 router.get("/", (req, res) => {
-  res.send("Route test fonctionne !");
+  res.json({ message: "API opérationnelle !" });
 });
 
 module.exports = router;

@@ -1,11 +1,14 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/db");
-
-const Task = sequelize.define("Task", {
-  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  title: { type: DataTypes.STRING, allowNull: false },
-  description: { type: DataTypes.TEXT, allowNull: true },
-  xp_reward: { type: DataTypes.INTEGER, defaultValue: 10 },
-});
-
-module.exports = Task;
+// models/TaskReset.js
+module.exports = (sequelize, DataTypes) => {
+  return sequelize.define(
+    "TaskReset",
+    {
+      id: { type: DataTypes.INTEGER.UNSIGNED, primaryKey: true, autoIncrement: true },
+      taskId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
+      period: { type: DataTypes.STRING(20), allowNull: false }, // daily, weekly...
+      lastResetAt: { type: DataTypes.DATE, allowNull: true },
+      nextResetAt: { type: DataTypes.DATE, allowNull: true },
+    },
+    { tableName: "task_resets", timestamps: true, createdAt: "createdAt", updatedAt: "updatedAt" }
+  );
+};

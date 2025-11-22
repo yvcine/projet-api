@@ -1,12 +1,16 @@
-const { DataTypes } = require("sequelize");
-const sequelize = require("../config/db");
-
-const UserTask = sequelize.define("UserTask", {
-  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  user_id: { type: DataTypes.INTEGER, allowNull: false },
-  task_id: { type: DataTypes.INTEGER, allowNull: false },
-  completed: { type: DataTypes.BOOLEAN, defaultValue: false },
-  completed_at: { type: DataTypes.DATE, allowNull: true },
-});
-
-module.exports = UserTask;
+// models/UnderTask.js
+module.exports = (sequelize, DataTypes) => {
+  return sequelize.define(
+    "UnderTask",
+    {
+      id: { type: DataTypes.INTEGER.UNSIGNED, primaryKey: true, autoIncrement: true },
+      taskId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
+      title: { type: DataTypes.STRING(255), allowNull: false },
+      description: { type: DataTypes.TEXT },
+      points: { type: DataTypes.INTEGER, defaultValue: 0 },
+      ord: { type: DataTypes.INTEGER, defaultValue: 0 },
+      isCompleted: { type: DataTypes.BOOLEAN, defaultValue: false },
+    },
+    { tableName: "under_tasks", timestamps: true, createdAt: "createdAt", updatedAt: "updatedAt" }
+  );
+};

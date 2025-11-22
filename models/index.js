@@ -1,26 +1,41 @@
-const User = require("./User");
-const Role = require("./Role");
-const Task = require("./Task");
-const UserTask = require("./UserTask");
-const TaskReset = require("./TaskReset");
-const XPLog = require("./XPLog");
+// models/index.js
+const sequelize = require("../config/db");
+const { DataTypes } = require("sequelize");
 
-// Roles ↔ Users
-Role.hasMany(User, { foreignKey: "role_id" });
-User.belongsTo(Role, { foreignKey: "role_id" });
+const Role = require("./Role")(sequelize, DataTypes);
+const User = require("./User")(sequelize, DataTypes);
+const Task = require("./Task")(sequelize, DataTypes);
+const UnderTask = require("./UnderTask")(sequelize, DataTypes);
+const TaskReset = require("./TaskReset")(sequelize, DataTypes);
+const UserTask = require("./UserTask")(sequelize, DataTypes);
+const XPLog = require("./XPLog")(sequelize, DataTypes);
 
-// Users ↔ Tasks via UserTask
-User.belongsToMany(Task, { through: UserTask, foreignKey: "user_id" });
-Task.belongsToMany(User, { through: UserTask, foreignKey: "task_id" });
+// Associations
+Role.hasMany(User, { foreignKey: "roleId" });
+User.belongsTo(Role, { foreignKey: "roleId" });
 
-// Task ↔ TaskReset
-Task.hasMany(TaskReset, { foreignKey: "task_id" });
-TaskReset.belongsTo(Task, { foreignKey: "task_id" });
+User.hasMany(UserTask, { foreignKey: "userId" });
+UserTask.belongsTo(User, { foreignKey: "userId" });
 
-// Users ↔ XPLog
-User.hasMany(XPLog, { foreignKey: "user_id" });
-XPLog.belongsTo(User, { foreignKey: "user_id" });
+Task.hasMany(UserTask, { foreignKey: "taskId" });
+UserTask.belongsTo(Task, { foreignKey: "taskId" });
 
-// Tasks ↔ XPLog
-Task.hasMany(XPLog, { foreignKey: "task_id" });
-XPLog.belongsTo(Task, { foreignKey: "task_id" });
+Task.hasMany(UnderTask, { foreignKey: "taskId" });
+UnderTask.belongsTo(Task, { foreignKey: "taskId" });
+
+Task.hasMany(TaskReset, { foreignKey: "taskId" });
+TaskReset.belongsTo(Task, { foreignKey: "taskId" });
+
+User.hasMany(XPLog, { foreignKey: "userId" });
+XPLog.belongsTo(User, { foreignKey: "userId" });
+
+module.exports = {
+  sequelize,
+  Role,
+  User,
+  Task,
+  UnderTask,
+  TaskReset,
+  UserTask,
+  XPLog
+};
